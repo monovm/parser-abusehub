@@ -2,7 +2,6 @@
 
 namespace AbuseIO\Parsers;
 
-use Ddeboer\DataImport\Reader;
 use SplFileObject;
 use AbuseIO\Models\Incident;
 
@@ -39,11 +38,31 @@ class Abusehub extends Parser
                 $this->createWorkingDir();
                 file_put_contents($this->tempPath . $attachment->getFilename(), $attachment->getContent());
 
-                $csvReader = new Reader\CsvReader(new SplFileObject($this->tempPath . $attachment->getFilename()));
-                $csvReader->setHeaderRowNumber(0);
+                $csvFile = new SplFileObject($this->tempPath . $attachment->getFilename());
+                $csvFile->setFlags(
+                    SplFileObject::READ_CSV | SplFileObject::SKIP_EMPTY | SplFileObject::DROP_NEW_LINE
+                );
+                $csvFile->setCsvControl(',');
+                $headers = null;
 
                 // Loop through all csv reports
-                foreach ($csvReader as $report) {
+                foreach ($csvFile as $row) {
+                    if ($row === null || $row === false || (is_array($row) && count($row) === 1 && $row[0] === null)) {
+                        continue;
+                    }
+
+                    if ($headers === null) {
+                        $headers = $row;
+                        continue;
+                    }
+
+                    $report = [];
+                    foreach ($headers as $i => $head) {
+                        if ($head === null || $head === '') {
+                            continue;
+                        }
+                        $report[$head] = array_key_exists($i, $row) ? $row[$i] : null;
+                    }
                     if (!empty($report['report_type'])) {
                         $this->feedName = $report['report_type'];
 
