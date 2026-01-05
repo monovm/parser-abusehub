@@ -1,5 +1,5 @@
 {
-    "name": "abuseio/parser-abusehub",
+    "name": "monovm/parser-abusehub",
     "description": "Parser addon for handling notifications from abusehub/abuseix",
     "keywords": ["laravel", "abuseio", "parser", "abusehub", "abuseix"],
     "homepage": "http://abuse.io",
